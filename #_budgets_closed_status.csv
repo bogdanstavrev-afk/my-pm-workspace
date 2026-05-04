@@ -1,0 +1,7 @@
+,Funded Status,account closed reason,Count of Account ID
+1,Closed Without Funding,CA_VOLUNTARY_OTHER,78
+2,Closed After Funding,CA_VOLUNTARY_OTHER,11
+3,Closed After Funding,,4
+4,Closed Without Funding,CA_INVOLUNTARY_OTHER,3
+5,Closed Without Funding,CA_RISK_OTHER,1
+6,Closed Without Funding,,1
