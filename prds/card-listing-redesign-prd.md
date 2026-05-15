@@ -2,16 +2,22 @@
 
 ## Problem statement
 
-The current Cards page separates cards into **My Cards** and **Team Expense Cards**, and only shows cards for the selected Account. This makes it hard for members to understand all cards available to the business at a glance, who owns each card, what role that person has, and which Account the card is linked to.
+The current Cards page separates cards into **My Cards** and **Team Expense Cards**, and only shows cards for the selected Account. This makes it hard for members to understand all cards available to the business at a glance, who owns each card, and which Account or Budget the card is linked to.
 
-The page also has two separate **Order** entry points: one for ordering a card for yourself and one for ordering cards for team members. This splits what should be a single issue-card journey.
+Today, around 90% of users have one Account, but Budgets introduce more account-like places where cards can be issued. Customers currently need to use the Account selector to find cards issued under a different Account or Budget, which is not intuitive. We already have customer feedback that some users are unable to find cards issued under a different Account.
+
+The page also has two separate **Order** entry points: one for ordering a card for yourself and one for ordering cards for team members. The target journey requires one **Order card** CTA that routes users to a single entry page where they choose whether they want a card for themselves or a Team card.
+
+## MVP framing
+
+Improve card-management clarity by helping users find all visible cards across Accounts and Budgets from one Cards page, understand whether each card is their own, a team member's, or a co-Director's, and start card ordering from one market-standard entry point.
 
 ## Goals
 
 - Show all cards in one unified listing.
-- Make each card's owner, owner role, and linked Account clear.
-- Replace separate self/team order entry points with one issue-card journey.
-- Allow the requester to assign a new card to themselves or an existing team member during that journey.
+- Make each card's owner, ownership context, and linked Account or Budget clear.
+- Replace separate self/team order entry points with one **Order card** CTA.
+- Add a single order entry page where users select **Card for themselves** or **Team card**.
 - Keep card management as the primary task on the page, with cashback offers treated as secondary content.
 
 ## Non-goals
@@ -19,25 +25,24 @@ The page also has two separate **Order** entry points: one for ordering a card f
 - Changing card eligibility, KYC, approval, or permission rules.
 - Changing card controls, limits, cashback offers, or transaction details.
 - Introducing new card types.
-- Adding search in the initial version.
 
 ## Scope
 
 | In scope | Out of scope |
 | --- | --- |
 | One card listing for all visible cards | New card products or card types |
-| Cardholder name, role, linked Account, and active/pending state on each card item | Changes to eligibility or approval logic |
-| One primary issue/order-card CTA | Redesign of card detail, limits, or transaction screens |
-| Assignee selection inside the issue-card journey | Changes to cashback offer mechanics |
-| Account filtering within the card listing | Showing inactive, frozen, or cancelled cards in the main list |
-| Empty state for users with no Active or Pending cards | Search in the initial version |
+| Cardholder name, ownership context, linked Account or Budget, and card state on each card item | Changes to eligibility or approval logic |
+| One primary **Order card** CTA | Redesign of card detail, limits, or transaction screens |
+| Order entry page with **Card for themselves** and **Team card** options | Changes to cashback offer mechanics |
+| Account/Budget filtering within the card listing | Showing inactive or cancelled cards in the main list |
+| Empty state for users with no cards to show | New permission model |
 
 ## User stories
 
 - As a business member, I can view all cards in one list so that I can understand the business's card setup quickly.
-- As a Director, I can see each cardholder's name, role, and linked Account so that I can manage cards with confidence.
-- As a multi-account user, I can identify which Account each card spends from so that I understand card-account relationships without switching Accounts.
-- As a Director, I can start one issue-card journey and choose myself or a team member as the assignee so that I do not need to pick between separate order buttons.
+- As a business member, I can identify whether a card is my card, a Team card, or a co-Director card so that I understand card ownership without separate page sections.
+- As a multi-account or Budgets user, I can identify which Account or Budget each card spends from so that I do not need to switch Accounts just to find a card.
+- As an Admin, I can start one order journey and choose **Card for themselves** or **Team card** so that card issuing follows one consistent entry point.
 
 ## Requirements
 
@@ -45,57 +50,61 @@ The page also has two separate **Order** entry points: one for ordering a card f
 2. Each card item must show:
    - Cardholder name.
    - A clear "You" indicator when the card belongs to the signed-in user.
-   - Cardholder role: **Director** or **Team Expense Member**.
-   - Linked Account.
-   - Card status: **Active** or **Pending**.
-3. The default listing must show cards across all Accounts visible to the user, not only the currently selected Account.
-4. The listing should include an Account filter so users can narrow cards by Account when needed.
-5. The main listing should show only **Active** and **Pending** cards.
-   - **Pending** means a Team Expense Member has not completed onboarding after downloading the app to get the card grant.
-   - Inactive, frozen, and cancelled card states should be surfaced on card detail pages, not in the main listing.
-6. Cashback offers should sit below the unified card list as a secondary module, not between the page header/action and the cards.
-7. Provide one primary **Order card** or **Issue card** CTA.
-8. Only **Directors** can issue cards to other team members.
-9. The issue-card journey must include assignee selection:
-   - Myself.
-   - Existing team member.
-10. Provide a dedicated empty state when the user has no **Active** or **Pending** cards.
-    - The empty state should explain that there are no active or pending cards to show.
-    - If the user is eligible to order a card, include the primary **Order card** or **Issue card** CTA.
-11. Existing eligibility, validation, and permission rules continue to apply.
+   - Ownership context: **My card**, **Team card**, or **Co-Director card**.
+   - Linked Account or Budget.
+   - Card state: **Active**, **Pending**, or **Frozen**.
+3. **Frozen** should be shown as a label on the card item for an active card that is currently frozen.
+4. The default listing must show cards across all Accounts and Budgets visible to the user, not only the currently selected Account.
+5. The listing should include an Account/Budget filter so users can narrow cards when needed.
+6. The main listing should show only cards that are relevant for day-to-day card management:
+   - **Active** cards.
+   - **Frozen** active cards.
+   - **Pending** cards.
+   - **Pending** means a team member has not completed onboarding after downloading the app to get the card grant.
+   - Inactive and cancelled cards are not part of the main list in the MVP.
+7. Cashback offers should sit below the unified card list as a secondary module, not between the page header/action and the cards.
+8. Provide one primary **Order card** CTA.
+9. The **Order card** CTA must open an order entry page with two options:
+   - **Card for themselves**.
+   - **Team card**.
+10. Only Admins, including co-Directors with Admin rights, can issue cards to team members.
+11. Provide a dedicated empty state when the user has no cards to show.
+    - The empty state should explain that there are no active, frozen, or pending cards to show.
+    - If the user is eligible to order a card, include the primary **Order card** CTA.
+12. Existing eligibility, validation, and permission rules continue to apply.
 
 ## Product decisions
 
-- The default view shows all cards across all visible Accounts.
-- Users can filter the card listing by Account.
-- Role labels are **Director** and **Team Expense Member**.
-- Directors can see their own card, co-Director cards, and Team Expense Member cards.
-- The main listing shows **Active** and **Pending** cards only.
-- Only Directors can issue cards to team members.
-- Search is not needed in the initial version because most users have only 2-3 cards. Account filtering is sufficient for launch.
+- The default view shows all cards across all visible Accounts and Budgets.
+- Users can filter the card listing by Account or Budget.
+- The listing should keep **My card** and **Team card** as ownership context, not as separate page sections.
+- Co-Director cards should be distinguishable from other Team cards because co-Directors effectively have Admin rights.
+- The main listing shows **Active**, **Frozen**, and **Pending** cards only.
+- Only Admins, including co-Directors with Admin rights, can issue cards to team members.
+- One **Order card** CTA is mandatory because the journey needs one standard entry point before the user chooses **Card for themselves** or **Team card**.
 - Recommendation: place cashback offers below the card list as a secondary benefits module. This keeps the primary card-management workflow uninterrupted while preserving access to offers.
 
 ## Success metrics
 
 | Metric | Baseline | Target |
 | --- | --- | --- |
-| Successful card orders from the Cards page | Current completion rate for existing self/team order entry points, measured before launch | +10% relative uplift in completed card orders per Cards page visitor |
-| Card-order journey drop-off | Current drop-off from **Order** tap to submitted card order, measured before launch | 15% relative reduction in drop-off |
-| Support contacts about finding personal/team cards | Current monthly volume of support contacts tagged to card discovery, team cards, or account/card visibility | 20% reduction against baseline |
-| Owner and Account identification in usability testing | Current design benchmark, if available; otherwise first test round becomes baseline | 90% of participants can identify cardholder and linked Account without facilitator help |
-| Correct assignee selection in usability testing | Current design benchmark, if available; otherwise first test round becomes baseline | 90% of eligible participants can choose the intended assignee in the issue-card journey |
+| Successful card orders from the Cards page | Current completion rate for existing self/team order entry points, measured before launch | +3-5% relative uplift in completed card orders per Cards page visitor |
+| Card-order journey drop-off | Current drop-off from **Order** tap to submitted card order, measured before launch | 5-8% relative reduction in drop-off |
+| Support contacts about finding personal/team cards | Current monthly volume of support contacts tagged to card discovery, team cards, Budgets, or account/card visibility | 10% reduction against baseline |
+| Card discovery in usability testing | Current design benchmark, if available; otherwise first test round becomes baseline | 85% of participants can find a card issued under a different Account or Budget without using the global Account selector |
+| Owner and Account/Budget identification in usability testing | Current design benchmark, if available; otherwise first test round becomes baseline | 85% of participants can identify cardholder, ownership context, and linked Account or Budget without facilitator help |
+| Correct order entry selection in usability testing | Current design benchmark, if available; otherwise first test round becomes baseline | 85% of eligible participants can choose **Card for themselves** or **Team card** correctly from the order entry page |
 
 ## Risks and mitigations
 
 | Risk | Mitigation |
 | --- | --- |
-| Users with many cards may find a single list hard to scan. | Include clear metadata and consider filters/search as a follow-up. |
-| Cross-account listing may conflict with existing Account selector expectations. | Default to all Accounts, label each Account clearly, and provide an Account filter. |
-| Role naming may be inconsistent across systems. | Use the agreed labels: Director and Team Expense Member. |
-| One issue-card journey may hide different permission states. | Keep existing permission checks and explain unavailable assignee options in-flow. |
+| Users with many cards may find a single list hard to scan. | Include clear metadata and Account/Budget filtering. |
+| Cross-account listing may conflict with existing Account selector expectations. | Default to all Accounts/Budgets, label each card's Account or Budget clearly, and provide filtering. |
+| Co-Director cards may be confused with regular Team cards. | Add a clear co-Director ownership indicator while avoiding separate page sections. |
+| One order entry point may hide different permission states. | Keep existing permission checks and explain unavailable options in the order entry page and downstream flow. |
 | Cashback and promotional cards may distract from card management. | Move cashback below the unified card list as secondary content. |
-| Users with larger card portfolios may miss search. | Keep search out of the initial version, monitor filter usage and feedback, and add search later if needed. |
 
 ## Open questions
 
-None at this stage.
+- What user journey drop-off data should be used as the pre-launch baseline once available?
