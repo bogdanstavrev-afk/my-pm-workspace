@@ -19,6 +19,7 @@ The page also has two separate **Order** entry points: one for ordering a card f
 - Changing card eligibility, KYC, approval, or permission rules.
 - Changing card controls, limits, cashback offers, or transaction details.
 - Introducing new card types.
+- Adding search in the initial version.
 
 ## Scope
 
@@ -29,6 +30,7 @@ The page also has two separate **Order** entry points: one for ordering a card f
 | One primary issue/order-card CTA | Redesign of card detail, limits, or transaction screens |
 | Assignee selection inside the issue-card journey | Changes to cashback offer mechanics |
 | Account filtering within the card listing | Showing inactive, frozen, or cancelled cards in the main list |
+| Empty state for users with no Active or Pending cards | Search in the initial version |
 
 ## User stories
 
@@ -57,7 +59,10 @@ The page also has two separate **Order** entry points: one for ordering a card f
 9. The issue-card journey must include assignee selection:
    - Myself.
    - Existing team member.
-10. Existing eligibility, validation, and permission rules continue to apply.
+10. Provide a dedicated empty state when the user has no **Active** or **Pending** cards.
+    - The empty state should explain that there are no active or pending cards to show.
+    - If the user is eligible to order a card, include the primary **Order card** or **Issue card** CTA.
+11. Existing eligibility, validation, and permission rules continue to apply.
 
 ## Product decisions
 
@@ -67,14 +72,18 @@ The page also has two separate **Order** entry points: one for ordering a card f
 - Directors can see their own card, co-Director cards, and Team Expense Member cards.
 - The main listing shows **Active** and **Pending** cards only.
 - Only Directors can issue cards to team members.
+- Search is not needed in the initial version because most users have only 2-3 cards. Account filtering is sufficient for launch.
 - Recommendation: place cashback offers below the card list as a secondary benefits module. This keeps the primary card-management workflow uninterrupted while preserving access to offers.
 
 ## Success metrics
 
-- Increase successful card orders from the Cards page by [OPEN QUESTION: target % and baseline].
-- Reduce card-order journey drop-off by [OPEN QUESTION: target % and baseline].
-- Reduce support contacts about finding personal/team cards by [OPEN QUESTION: target % and baseline].
-- Improve usability-test success for identifying card owner and linked Account to [OPEN QUESTION: target %].
+| Metric | Baseline | Target |
+| --- | --- | --- |
+| Successful card orders from the Cards page | Current completion rate for existing self/team order entry points, measured before launch | +10% relative uplift in completed card orders per Cards page visitor |
+| Card-order journey drop-off | Current drop-off from **Order** tap to submitted card order, measured before launch | 15% relative reduction in drop-off |
+| Support contacts about finding personal/team cards | Current monthly volume of support contacts tagged to card discovery, team cards, or account/card visibility | 20% reduction against baseline |
+| Owner and Account identification in usability testing | Current design benchmark, if available; otherwise first test round becomes baseline | 90% of participants can identify cardholder and linked Account without facilitator help |
+| Correct assignee selection in usability testing | Current design benchmark, if available; otherwise first test round becomes baseline | 90% of eligible participants can choose the intended assignee in the issue-card journey |
 
 ## Risks and mitigations
 
@@ -85,9 +94,8 @@ The page also has two separate **Order** entry points: one for ordering a card f
 | Role naming may be inconsistent across systems. | Use the agreed labels: Director and Team Expense Member. |
 | One issue-card journey may hide different permission states. | Keep existing permission checks and explain unavailable assignee options in-flow. |
 | Cashback and promotional cards may distract from card management. | Move cashback below the unified card list as secondary content. |
+| Users with larger card portfolios may miss search. | Keep search out of the initial version, monitor filter usage and feedback, and add search later if needed. |
 
 ## Open questions
 
-- What are the baseline and target values for the success metrics?
-- Should the initial version include search in addition to Account filtering?
-- Should the list have a separate empty state for users with no active or pending cards?
+None at this stage.
