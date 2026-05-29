@@ -1,4 +1,9 @@
-# Skill: Weekly stakeholder update
+---
+name: stakeholder-update
+description: Draft weekly or fortnightly stakeholder updates from sprint data and decisions log. Use when asked for a stakeholder update.
+---
+
+# Weekly stakeholder update
 
 ## When to use
 Whenever I ask for a weekly or fortnightly stakeholder update.

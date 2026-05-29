@@ -1,4 +1,9 @@
-# Skill: Backlog Audit
+---
+name: backlog-audit
+description: Audit backlog health for stale tickets, duplicates, missing fields, and unowned P0/P1. Use for quarterly or health backlog reviews.
+---
+
+# Backlog Audit
 
 ## When to use
 When asked to audit the health of a backlog (typically quarterly).
