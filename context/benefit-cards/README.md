@@ -4,6 +4,17 @@ Curated from Confluence (PAYM, TBE, COM spaces). Last synced: **2026-05-29**.
 
 Use this folder as the source of truth for Benefit Cards product context in this workspace. Confluence remains authoritative for live specs; update here when major pages change.
 
+## Executive summary
+
+Tide's **Multi Benefit Card** lets Indian corporates (structured partners) load tax-advantaged employee benefits into MCC-restricted wallets (Food, Fuel, Telecom, Rewards) on a single RuPay card, with a General wallet for reimbursements and year-end sweeps. It competes with Pluxee/Sodexo and runs on Transcorp PPI + M2P multi-wallet infrastructure.
+
+**Where we are:** Internal Slice 1 pilot with Tide employees is done or underway. Slice 2 adds wallet fallback, in-app reimbursement, and automated EOY reporting. **External GA is on hold** (May 2026) because R&C identified the product as a de facto B2B2C model — employees retain app access and wallet balances post-exit — without adequate BIDM alignment or offboarding design. RFC-CARDS-0129 defines a hybrid interim architecture (`Benefit Employee` business category) en route to individual-owned resources.
+
+**The three things that break if you get them wrong:**
+1. **Wallet rules** — Meal carries forward; Fuel/Telecom sweep to General at EOY/exit; reimbursement is Fuel/Telecom only; no cross-wallet spend
+2. **Lifecycle** — Exit, account closure, and EOY are core flows with tax and employer liability implications
+3. **Refunds** — Must return to the originating wallet or tax ring-fencing breaks
+
 ## Confluence source index
 
 | Topic | Confluence page |
