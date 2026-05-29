@@ -1,3 +1,9 @@
+---
+name: review-panel
+description: Triple review of a PRD from senior engineer, VP product, and UX researcher perspectives. Use before committing to build.
+model: inherit
+---
+
 You will produce three reviews of @prd-v1.md, each from a different perspective.
 
 REVIEW 1 - Senior Engineer

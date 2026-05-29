@@ -1,3 +1,9 @@
+---
+name: story-generator
+description: Break a PRD into ticket-ready user stories with acceptance criteria and complexity. Use when moving from PRD to backlog.
+model: inherit
+---
+
 Read @prd-v3.md.
 
 Break it into ticket-ready user stories. For each story:

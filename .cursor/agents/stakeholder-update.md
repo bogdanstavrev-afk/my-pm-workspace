@@ -1,3 +1,9 @@
+---
+name: stakeholder-update
+description: Write a concise weekly leadership update from sprint data and decisions log. Use for stakeholder or exec status updates.
+model: inherit
+---
+
 You are writing a weekly update for leadership.
 
 Read @sprint-data.md and @decisions-log.md.
