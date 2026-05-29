@@ -1,3 +1,9 @@
+---
+name: backlog-audit
+description: Quick backlog health scorecard from CSV or Jira — stale tickets, duplicates, missing fields, unowned P0/P1. Use for fast backlog triage (see backlog-audit skill for full quarterly audit).
+model: inherit
+---
+
 Analyse @backlog-export.csv (or query the project tool directly via MCP).
 
 Identify:

@@ -1,3 +1,9 @@
+---
+name: metrics-insights
+description: Analyse monthly metrics CSV with MoM and QoQ trends for leadership reviews. Use when interpreting product metrics or flagging significant changes.
+model: inherit
+---
+
 Analyse @monthly-metrics.csv.
 
 For each key metric:
