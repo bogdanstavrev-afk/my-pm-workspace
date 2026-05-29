@@ -1,4 +1,9 @@
-# Skill: MOIA - Member Operations Impact Assessment
+---
+name: moia
+description: Member Operations Impact Assessment before launches affecting contact volume, agents, tooling, or comms. Use before go/no-go on member-visible changes.
+---
+
+# MOIA - Member Operations Impact Assessment
 
 ## When to use
 Before any change that could affect contact volume, agent workflows, tooling, policies, or member-facing communications. Run this BEFORE the go/no-go review, not after.

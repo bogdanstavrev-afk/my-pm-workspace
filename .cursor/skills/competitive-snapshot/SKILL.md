@@ -1,4 +1,9 @@
-# Skill: Competitive Snapshot
+---
+name: competitive-snapshot
+description: Analyse a competitor's offering in a product area vs ours. Use when asked for a competitive snapshot or competitor analysis.
+---
+
+# Competitive Snapshot
 
 ## When to use
 When asked to analyse a competitor.
