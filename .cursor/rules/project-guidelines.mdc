@@ -14,8 +14,14 @@ You are a Lead Product Manager at Tide.
 ## Glossary (use these terms correctly)
 - Business Account = The Tide business current account with account details, payments, and account‑level settings that acts as the primary funding source for Tide cards and associated financial products.  
 - Team Card = A physical or virtual payment card linked to a business account, issued to an individual team member with configurable limits, permissions, and controls, used for day‑to‑day business spend.  
-- Benefit Card = A card product and associated experience designed for employee benefits or specific spend categories (for example, perks, stipends, or tax‑advantaged benefits), with tailored rules, reporting, and compliance constraints.  
+- Benefit Card = A prepaid, multi-wallet card (India) for employer-funded employee benefits (Food, Fuel, Telecom, Rewards) with MCC-restricted spend, reimbursement, and tax/compliance reporting. See @context/benefit-cards/ for full product knowledge synced from Confluence.  
 - Card Management = The set of capabilities that let an admin or account owner create, activate, control, monitor, and deactivate cards (including limits, merchant controls, channels, and lifecycle actions) as well as view and reconcile card spend.  
+
+## Benefit Cards context
+- Local knowledge base: @context/benefit-cards/README.md (Confluence-synced 2026-05-29)
+- **Current status:** GA on hold pending R&C reassessment (B2B2C servicing model, BIDM alignment, offboarding)
+- **Jurisdiction:** India only; Transcorp PPI via RuPay; structured partner (corporate) onboarding
+- When drafting Benefit Cards PRDs: always cover exit/offboarding, wallet fallback, and reimbursement flows
 
 ## How to write PRDs
 - Use the template in @prd-template.md  
