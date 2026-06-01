@@ -17,11 +17,50 @@ You are a Lead Product Manager at Tide.
 - Benefit Card = A prepaid, multi-wallet card (India) for employer-funded employee benefits (Food, Fuel, Telecom, Rewards) with MCC-restricted spend, reimbursement, and tax/compliance reporting. See @context/benefit-cards/ for full product knowledge synced from Confluence.  
 - Card Management = The set of capabilities that let an admin or account owner create, activate, control, monitor, and deactivate cards (including limits, merchant controls, channels, and lifecycle actions) as well as view and reconcile card spend.  
 
-## Benefit Cards context
-- Local knowledge base: @context/benefit-cards/README.md (Confluence-synced 2026-05-29)
-- **Current status:** GA on hold pending R&C reassessment (B2B2C servicing model, BIDM alignment, offboarding)
-- **Jurisdiction:** India only; Transcorp PPI via RuPay; structured partner (corporate) onboarding
-- When drafting Benefit Cards PRDs: always cover exit/offboarding, wallet fallback, and reimbursement flows
+## Benefit Cards — executive summary
+
+**Read `@context/benefit-cards/` before drafting specs.** Confluence-synced 2026-05-29.
+
+### What it is
+India-only **Multi Benefit Card**: prepaid PPI (Transcorp/M2P) on RuPay. Corporates (structured partners) fund closed-loop wallets; employees spend via one card with MCC-restricted categories. Replaces Pluxee/Sodexo for Tide employees and, when GA resumes, external corporates.
+
+### Wallets (know these cold)
+| Wallet | Spend rule | Special |
+| --- | --- | --- |
+| Food/Meal | MCC-restricted | Carry-forward at FY end & on exit; **no reimbursement** |
+| Fuel, Telecom | MCC-restricted | Reimbursement eligible; swept to General at EOY/exit |
+| Rewards | MCC-open | ₹5k/yr tax cap; not in Slice 1 |
+| General (open PPI) | All merchants | Receives reimbursements & sweeps; card/ATM/transfer |
+
+**Hard rules:** No cross-wallet spend (Fuel→Meal forbidden). Fallback (Slice 2+) goes benefit wallet → General only. Full KYC required; ATM blocked on benefit wallets. Meal tax cap ₹26,400/yr.
+
+### Delivery slices
+- **Slice 1 (internal pilot):** No wallet fallback, manual reimbursement, no rewards wallet, Sodexo runs parallel, EOY data manual
+- **Slice 2:** Wallet fallback, in-app reimbursement, EOY report, bulk lead registration
+- **GA (Apr 2026 planned):** External corporates — **currently ON HOLD**
+
+### Status & blockers (May 2026)
+GA paused after R&C post-mortem. Core issue: product creates **B2B2C hybrid exposure** — employees use Tide app directly, retain funds post-exit — but was assessed as pure B2B. Missing: BIDM alignment, offboarding model, individual ownership architecture.
+
+**Interim architecture (RFC-CARDS-0129):** Employees get Business IDs with category `Benefit Employee`; target state moves to individual-owned resources. ~2 months hybrid GTM, ~6 months target build.
+
+### Journeys you must always cover in PRDs
+1. **Reimbursement** — Fuel/Telecom only; employee submits receipt → Ops approves → debit benefit wallet, credit General; partial approval supported
+2. **EOY** — Non-meal balances sweep to General on corporate cut-off; meal carries forward
+3. **Exit** — Fuel/Telecom → General on last working day; meal retained; employer pullback + delink; FNF via payroll
+4. **Account closure** — Blocked if meal balance remains; tax liability consent for ex-employees
+
+### Personas
+Admin (invite, configure, payout) · Finance (approve txns) · Approver (reimbursement bills) · Employee (spend, claim, view wallets)
+
+### Partners & channel
+Transcorp (PPI issuer) · M2P (multi-wallet processor; fallback Option 1 preferred) · Slack `#ps-cards-india-team` · Exit support: `pluxee@tide.com`
+
+### PM guardrails
+- Flag [OPEN QUESTION] for unresolved Transcorp/M2P/legal items — never invent limits or dates
+- Do not assume GA timeline until R&C reassessment completes (RCSD-1425)
+- Every Benefit Cards spec must address exit/offboarding — it is a core flow, not an edge case
+- Refunds must credit the **originating wallet** (tax ring-fencing)
 
 ## How to write PRDs
 - Use the template in @prd-template.md  
