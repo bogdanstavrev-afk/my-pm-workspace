@@ -1,0 +1,38 @@
+{
+  "description": "EOD chase for Credit Flex progress update — 3 Jun 2026",
+  "channel_id": "C0AMNU3DQ7M",
+  "channel_name": "credit-flex-cards",
+  "thread_ts": "1780404796.966589",
+  "parent_user_id": "U09F1RPPU69",
+  "eod_timezone": "Europe/Athens",
+  "eod_hour": 18,
+  "eod_minute": 0,
+  "stakeholders": [
+    {
+      "user_id": "U08QW5LBEPQ",
+      "name": "Deepak Nayal",
+      "ask": "Credit-side input on BA monitoring KPIs (PAYSBA-53152)"
+    },
+    {
+      "user_id": "U01HPLEKSUE",
+      "name": "Nataliya",
+      "ask": "T&Cs readiness for card auto-flex (PAYSBA-53147)"
+    },
+    {
+      "user_id": "U04N0KGAKE1",
+      "name": "Denitsa Trendafilova",
+      "ask": "Risk Assessment status / ETA (PAYSBA-53149)"
+    },
+    {
+      "user_id": "U03V676G9H6",
+      "name": "Vytautas Ubartas",
+      "ask": "Engineering blockers or timeline risks"
+    },
+    {
+      "user_id": "U055MFPDGJF",
+      "name": "Engineering (Cards/Credit)",
+      "ask": "Engineering blockers or timeline risks"
+    }
+  ],
+  "chase_message": "Quick bump on the update above — we're ~4 weeks from launch and I'm closing open items before they hit critical path.\n\nStill waiting on:\n• <@U08QW5LBEPQ> — any Credit-side input on BA monitoring KPIs (<https://tideaccount.atlassian.net/browse/PAYSBA-53152|PAYSBA-53152>)? I can draft a first cut from PRD + RFC §6 tonight if that's easier.\n• <@U01HPLEKSUE> — can you confirm T&Cs readiness for card auto-flex (<https://tideaccount.atlassian.net/browse/PAYSBA-53147|PAYSBA-53147>)?\n• <@U04N0KGAKE1> — RA status / ETA (<https://tideaccount.atlassian.net/browse/PAYSBA-53149|PAYSBA-53149>)? Happy to escalate if we're blocked on inputs.\n• <@U03V676G9H6> <@U055MFPDGJF> — any eng blockers, dependencies, or timeline risks on the build? Even a one-liner in-thread helps.\n\nThanks."
+}
