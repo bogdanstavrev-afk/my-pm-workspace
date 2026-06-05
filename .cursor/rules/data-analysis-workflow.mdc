@@ -1,0 +1,10 @@
+---
+description: Routes data tasks to the correct specialized subagent based on the business context.
+globs: ["**/*.csv", "**/exports/**"]
+---
+
+# Analysis Routing Rules
+
+- **IF** the task is about Tide card performance, seats, or member behavior:
+    - **THEN** call `@tide-data-analyst`. 
+    - **INSTRUCTION:** Ensure they follow the "Minimalist Overview" protocol first.
