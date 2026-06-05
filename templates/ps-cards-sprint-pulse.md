@@ -9,7 +9,7 @@ Post to **#ps-cards** at **sprint start** and **sprint end** so external teams k
 | **Sprint start** | What OKR epics eng is working on this sprint | What other tickets (bugs, improvements, tech debt) are in flight |
 | **Sprint end** | What OKR work actually landed | What else shipped |
 
-**Sprint end:** share **only what shipped** — no not-delivered or slip list.
+**Sprint end:** share **only what shipped** (Done) — no general not-delivered slip list. **Do** flag tickets in Jira **Blocked** status at sprint close.
 
 Keep it **short and plain**. One line per epic (OKR) or ticket (non-OKR). Write for someone who doesn't live in Jira.
 
@@ -69,13 +69,13 @@ Heads-up
 ```
 ✅ PS Cards Management — Sprint end · Q2 Sprint 5 · <dates>
 
-OKR work delivered
-• PAYSBA-XXXXX · <epic title> — <what landed, in plain English>
-• … — or Nothing on OKRs this sprint
+Work delivered
+• PAYSBA-XXXXX · <epic title> — <plain-English outcome; open epic for stories>
+• …
 
-Non-OKR work delivered
-• PAYSBA-XXXXX · <short title> — Done
-• … — or Nothing else this sprint
+Blocked at sprint close
+• PAYSBA-XXXXX · <epic or ticket> — <blocker in plain English>
+— or None
 
 Heads-up for next sprint
 • <risk> — or None

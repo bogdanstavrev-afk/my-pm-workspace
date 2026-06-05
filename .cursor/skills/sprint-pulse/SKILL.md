@@ -18,7 +18,7 @@ External teams need a plain read on OKR vs non-OKR work without chasing the EM.
 
 Write **human-readable** — plain English outcomes, not Jira status dumps.
 
-**Sprint end:** report **only what shipped** — do not include a "Not delivered" or slip list.
+**Sprint end:** report **only what shipped** (Done) — do not include a general "Not delivered" or slip list. **Do** include a **Blocked at sprint close** section when any sprint tickets are in Jira Blocked status.
 
 ## Invoke
 
@@ -78,7 +78,8 @@ AND sprint = "<exact Card Management sprint name>"
 AND parent IN (PAYSBA-54678, PAYSBA-41839, ...)   -- Cards Management epics
 ```
 
-- **Sprint end:** add `AND status = Done`
+- **Sprint end (shipped):** `AND status = Done` — all Done tickets in the sprint; no epic filter unless the PM asks to narrow
+- **Sprint end (blocked):** separate query `AND status = Blocked` — same sprint name; list every blocked ticket
 - **Sprint start:** all tickets in that sprint (any status); OKR = epic-level focus from in-flight work
 
 ### What NOT to use for sprint scope
@@ -101,8 +102,8 @@ After sprint planning, the next sprint (e.g. `2026_Q2_06_Card_Management`) may h
 
 ## Linking rules
 
-- **OKR** → Epic key + title, one line per epic
-- **Non-OKR** → ticket key + short title
+- **Sprint end (default):** one line per **epic** — `PAYSBA-EPIC · epic title — plain-English outcome`. Stakeholders open the epic in Jira to see stories. Do **not** list every story/sub-task unless the PM asks for a full ticket audit.
+- **Sprint start:** epic key + title + one-line focus; non-epic work → ticket key + short title when no epic parent
 - Format: `PAYSBA-KEY · title — detail`; no `*` bold, no `<url|label>`
 - Use `None` when a section has nothing — not `_None_`
 
@@ -123,10 +124,10 @@ After sprint planning, the next sprint (e.g. `2026_Q2_06_Card_Management`) may h
 
 ## `/sprint-pulse end`
 
-- **OKR work delivered** — epic-level outcomes in plain English (Done in **this** sprint only)
-- **Non-OKR work delivered** — individual Done tickets in **this** sprint only
-- **Heads-up for next sprint** — forward-looking only, not a slip list
-- Omit epics/tickets that did not ship — do not call out misses in channel
+- **Work delivered** — group Done tickets by epic; **one human-readable line per epic** summarising what landed (plain English, no service names or endpoint paths unless essential). Include epic key + title for Jira drill-down. Merge small epics into a sensible narrative when helpful; skip epics with no Done work.
+- **Blocked at sprint close** — plain-English blocker summary; prefer epic key when all blocked tickets share an epic, otherwise one line per blocked ticket. Use `None` if none. Not a slip list — do not list In Progress, Deploying, Draft, etc.
+- **Heads-up for next sprint** — forward-looking only; plain English; ticket keys optional
+- Query all Done in the sprint (no epic filter). Do not list individual story keys in the default stakeholder post.
 
 ## Output templates
 
@@ -153,16 +154,16 @@ Heads-up
 ```
 ✅ <Team label> — Sprint end · Q2 Sprint 5 · <dates>
 
-OKR work delivered
-• PAYSBA-XXXXX · <epic title> — <what landed>
-— or Nothing on OKRs this sprint
+Work delivered
+• PAYSBA-XXXXX · <epic title> — <what landed, plain English; open epic for stories>
+• …
 
-Non-OKR work delivered
-• PAYSBA-XXXXX · <short title> — Done
-— or Nothing else this sprint
+Blocked at sprint close
+• PAYSBA-XXXXX · <epic or ticket> — <blocker in plain English>
+— or None
 
 Heads-up for next sprint
-• <risk> — or None
+• <forward-looking risk or focus> — or None
 ```
 
 ### Mid-sprint UPDATE
@@ -182,27 +183,28 @@ Now targeting
 
 ## Writing style
 
-- **Good (end):** "Credit Flex — BE APIs, schemas, and eligibility endpoints landed"
-- **Bad (end):** "9/12 tickets Done; PAYSBA-54979 In Progress"
-- **Bad (start):** listing Done work from the sprint that just closed
-- **Bad (both):** same ticket list for start and end
-- OKR lines (end) = epic outcomes for work that **landed this sprint**. Non-OKR lines (end) = Done tickets **this sprint only**.
+- **Good (end):** "PAYSBA-54678 · Credit Flex on Tide Cards — Backend foundation landed: eligibility APIs, schemas, and credit-service integration so eng can build the member experience next"
+- **Bad (end):** listing PAYSBA-54836, PAYSBA-54837, GET /api/v4/… endpoint names, or "9/12 tickets Done"
+- **Bad (end):** sub-task keys, adapter service names, liquibase changesets in the channel post
+- **Good (blocked):** "PAYSBA-41839 · Click to Pay — backfills for existing cardholders' phone and address blocked at close"
+- Write for someone who does not live in Jira — epic key is the link; outcome is the message
 
 ## PM review checklist
 
 - [ ] Correct **sprint** used (end = closing sprint; start = next sprint — not the same)
 - [ ] Header includes **sprint number** from Jira (e.g. Q2 Sprint 5) when available
 - [ ] JQL used `sprint = "<Card Management sprint name>"` on board 809
-- [ ] OKR vs non-OKR split is correct
-- [ ] Plain English — would Lora understand without opening Jira?
-- [ ] Sprint end lists **only Done / shipped** work — no not-delivered section
-- [ ] Heads-up is forward-looking, not a repeat of missed sprint items
+- [ ] Sprint end is **epic-level plain English** — not a story/sub-task dump
+- [ ] Sprint end lists **only Done / shipped** work in delivery sections — no general not-delivered slip list
+- [ ] **Blocked at sprint close** lists every Blocked ticket in the sprint (or None)
+- [ ] Heads-up is forward-looking, not a repeat of blocked or missed items
 
 ## What NOT to do
 
 - Do not post to Slack without explicit user request
 - Do not use `openSprints()` or `closedSprints()` without a named Card Management sprint
-- Do not list every sub-task under an OKR epic
-- Do not add a **Not delivered** section on sprint end
+- Do not list every story or sub-task on sprint end unless the PM asks for a full audit
+- Do not add a general **Not delivered** or slip list on sprint end (In Progress, Deploying, Draft, etc.)
+- Do include **Blocked at sprint close** when Blocked tickets exist in the sprint
 - Do not use bureaucratic headers like "Delivered — OKR" — use "OKR work delivered"
 - Do not use `*` or `<url|label>` in Slack output

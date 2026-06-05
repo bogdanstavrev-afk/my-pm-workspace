@@ -19,7 +19,7 @@ Read and follow **`.cursor/skills/sprint-pulse/SKILL.md`** and **`templates/ps-c
 
 1. Resolve the **exact Jira sprint name** on board 809 (e.g. `2026_Q2_05_Card_Management`) — read `customfield_10015` from any board ticket if needed.
 2. Parse **sprint number** for the header: `2026_Q2_05_…` → **Q2 Sprint 5**; add dates from Jira.
-3. **End** → closing sprint + `status = Done`
+3. **End** → closing sprint: all `status = Done` (full sprint, no epic filter unless asked) + separate query for `status = Blocked`
 4. **Start** → **next** sprint (not the closing one) — all committed tickets
 5. JQL: `project = PAYSBA AND sprint = "<sprint_name>" AND parent IN (...)`
 
