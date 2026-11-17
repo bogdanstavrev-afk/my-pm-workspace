@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Card issued → first transaction funnel · BCA vs CoFo</title>
+<style>
+  :root {
+    color-scheme: light;
+    --page:           #f9f9f7;
+    --surface-1:      #fcfcfb;
+    --text-primary:   #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted:     #898781;
+    --grid:           #e1e0d9;
+    --baseline:       #c3c2b7;
+    --issued:         #c3c2b7;   /* neutral: the 100% reference bar */
+    /* ordinal ramp, validated with --ordinal (light): stage 1 = darkest */
+    --st-7:   #104281;
+    --st-14:  #256abf;
+    --st-30:  #5598e7;
+    --st-ever:#86b6ef;
+    --warn-ink: #7a5200;
+    --warn-bg:  #fdf3dc;
+    --good-ink: #006300;
+    --good-bg:  #e6f4e6;
+    --hover: rgba(11,11,11,.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      color-scheme: dark;
+      --page:#0d0d0d; --surface-1:#1a1a19; --text-primary:#f0efec; --text-secondary:#c3c2b7;
+      --text-muted:#898781; --grid:#2c2c2a; --baseline:#383835; --issued:#52514e;
+      --st-7:#86b6ef; --st-14:#3987e5; --st-30:#256abf; --st-ever:#184f95;
+      --warn-ink:#fab219; --warn-bg:#2a2210; --good-ink:#0ca30c; --good-bg:#122412;
+      --hover: rgba(240,239,236,.08);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page:#0d0d0d; --surface-1:#1a1a19; --text-primary:#f0efec; --text-secondary:#c3c2b7;
+    --text-muted:#898781; --grid:#2c2c2a; --baseline:#383835; --issued:#52514e;
+    --st-7:#86b6ef; --st-14:#3987e5; --st-30:#256abf; --st-ever:#184f95;
+    --warn-ink:#fab219; --warn-bg:#2a2210; --good-ink:#0ca30c; --good-bg:#122412;
+    --hover: rgba(240,239,236,.08);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--page); color: var(--text-primary);
+    font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+  }
+  .wrap { max-width: 1320px; margin: 0 auto; padding: 32px 24px 56px; }
+  h1 { font-size: 24px; font-weight: 600; margin: 0 0 6px; letter-spacing: -.01em; }
+  .sub { color: var(--text-secondary); margin: 0 0 22px; max-width: 78ch; }
+  .scope { color: var(--text-primary); background: var(--surface-1); border: 1px solid var(--grid); border-left: 3px solid var(--st-14);
+    border-radius: 8px; padding: 8px 12px; margin: -10px 0 18px; max-width: 98ch; font-size: 12.5px; color: var(--text-secondary); }
+  .scope b { color: var(--text-primary); font-weight: 600; }
+
+  /* controls: one row above the charts */
+  .controls { display: flex; flex-wrap: wrap; gap: 14px 20px; align-items: center; margin-bottom: 16px; }
+  .ctl-label { color: var(--text-secondary); font-size: 12px; margin-right: 6px; }
+  .seg { display: inline-flex; background: var(--surface-1); border: 1px solid var(--grid); border-radius: 8px; padding: 2px; }
+  .seg button {
+    appearance: none; border: 0; background: transparent; color: var(--text-secondary);
+    font: inherit; font-size: 13px; padding: 6px 12px; border-radius: 6px; cursor: pointer;
+  }
+  .seg button:hover { background: var(--hover); }
+  .seg button[aria-pressed="true"] { background: var(--text-primary); color: var(--surface-1); font-weight: 600; }
+  .seg button:focus-visible, .theme:focus-visible { outline: 2px solid var(--st-14); outline-offset: 2px; }
+  .spacer { flex: 1; }
+  .theme { appearance:none; border:1px solid var(--grid); background:var(--surface-1); color:var(--text-secondary);
+    font: inherit; font-size: 12px; padding: 6px 10px; border-radius: 8px; cursor: pointer; }
+
+  .status { display: inline-flex; gap: 8px; align-items: center; font-size: 12.5px; padding: 6px 10px; border-radius: 8px; margin-bottom: 18px; }
+  .status.final { background: var(--good-bg); color: var(--good-ink); }
+  .status.warn  { background: var(--warn-bg); color: var(--warn-ink); }
+  .status b { font-weight: 600; }
+
+  /* legend */
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 0 0 14px; color: var(--text-secondary); font-size: 12.5px; }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .legend i { width: 14px; height: 10px; border-radius: 2px; display: inline-block; }
+
+  /* 2×3 grid: columns = card product, rows = cohort */
+  .matrix { display: grid; grid-template-columns: 74px 1fr 1fr 1fr; gap: 14px; align-items: stretch; }
+  .colhead { font-size: 13px; font-weight: 600; color: var(--text-primary); padding: 0 4px 0; align-self: end; }
+  .colhead small { display: block; font-weight: 400; color: var(--text-muted); font-size: 12px; }
+  .rowhead { writing-mode: vertical-rl; transform: rotate(180deg); text-align: center; font-weight: 600;
+    color: var(--text-primary); align-self: center; justify-self: center; font-size: 13px; }
+  .panel { background: var(--surface-1); border: 1px solid var(--grid); border-radius: 12px; padding: 16px 18px 14px; min-width: 0; }
+  .panel h3 { margin: 0; font-size: 14px; font-weight: 600; }
+  .panel .meta { color: var(--text-secondary); font-size: 12.5px; margin: 2px 0 12px; }
+  .panel .foot { color: var(--text-muted); font-size: 12px; margin-top: 10px; min-height: 18px; }
+  .panel .foot .flag { color: var(--warn-ink); }
+
+  .funnel { position: relative; }
+  .frow { display: grid; grid-template-columns: 104px 1fr; align-items: center; height: 36px; position: relative; }
+  .flabel { font-size: 12.5px; color: var(--text-secondary); padding-right: 8px; line-height: 1.2; }
+  .plot { position: relative; height: 100%; margin-right: 58px; }
+  .bar {
+    position: absolute; left: 0; top: 50%; height: 22px; transform: translateY(-50%);
+    border-radius: 0 4px 4px 0; min-width: 2px;
+    transition: filter .12s, width .35s ease;
+    cursor: default;
+  }
+  .bar:hover, .bar:focus-visible { filter: brightness(1.12) saturate(1.1); outline: none; }
+  .bar:focus-visible { box-shadow: 0 0 0 2px var(--surface-1), 0 0 0 4px var(--text-primary); }
+  .val { position: absolute; top: 50%; transform: translateY(-50%); font-size: 13px; font-weight: 600;
+    color: var(--text-primary); white-space: nowrap; pointer-events: none; }
+  .axis { display: grid; grid-template-columns: 104px 1fr; height: 22px; }
+  .axis .ticks { position: relative; margin-right: 58px; border-top: 1px solid var(--baseline); }
+  .axis .ticks span { position: absolute; top: 4px; transform: translateX(-50%); font-size: 11px; color: var(--text-muted); }
+  .axis .ticks span:first-child { transform: none; }
+  .grid-lines { position: absolute; pointer-events: none; }
+  .grid-lines i { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--grid); }
+
+  /* tooltip */
+  .tip { position: fixed; z-index: 10; pointer-events: none; background: var(--surface-1); color: var(--text-primary);
+    border: 1px solid var(--baseline); border-radius: 8px; padding: 10px 12px; min-width: 210px; max-width: 280px;
+    box-shadow: 0 6px 20px rgba(0,0,0,.14); font-size: 12.5px; opacity: 0; transition: opacity .08s; }
+  .tip.on { opacity: 1; }
+  .tip .t-title { color: var(--text-secondary); font-size: 12px; margin-bottom: 4px; }
+  .tip .t-val { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+  .tip .t-row { display: flex; align-items: center; gap: 8px; color: var(--text-secondary); margin-top: 3px; }
+  .tip .t-key { width: 12px; height: 2px; border-radius: 1px; flex: none; }
+
+  /* takeaways + table */
+  h2 { font-size: 16px; font-weight: 600; margin: 34px 0 10px; }
+  .notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+  .note { background: var(--surface-1); border: 1px solid var(--grid); border-radius: 12px; padding: 14px 16px; color: var(--text-secondary); }
+  .note b { color: var(--text-primary); display: block; margin-bottom: 4px; font-size: 13.5px; }
+  .tablewrap { background: var(--surface-1); border: 1px solid var(--grid); border-radius: 12px; overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  th, td { padding: 8px 12px; text-align: right; white-space: nowrap; }
+  th:nth-child(-n+3), td:nth-child(-n+3) { text-align: left; }
+  thead th { color: var(--text-secondary); font-weight: 500; border-bottom: 1px solid var(--baseline); font-size: 12px; }
+  tbody td { border-bottom: 1px solid var(--grid); font-variant-numeric: tabular-nums; }
+  tbody tr:last-child td { border-bottom: 0; }
+  tbody tr.sel { background: var(--hover); }
+  tbody tr.groupstart td { border-top: 1px solid var(--baseline); }
+  .src { color: var(--text-muted); font-size: 12px; margin-top: 18px; max-width: 110ch; }
+
+  @media (max-width: 960px) {
+    .matrix { grid-template-columns: 1fr; }
+    .colhead.empty, .rowhead { display: none; }
+    .colhead { margin-top: 10px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .bar { transition: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Card issued → first transaction</h1>
+  <p class="sub">Share of newly issued main cards whose company made a first cleared card debit, by time since issuance. Split by onboarding cohort (BCA direct access vs Company Formation) and card product (Physical, Online Debit, Virtual).</p>
+  <p class="scope"><b>Scope: new KMs only.</b> Every figure is for cards issued to new KMs, meaning companies whose first KYX was approved in the cohort month. Virtual cards issued to or used by mature KMs are not included. Most Virtual card usage comes from mature KMs, so the Virtual rates here do not describe Virtual card activation overall.</p>
+
+  <div class="controls" role="group" aria-label="Filters">
+    <div><span class="ctl-label">KM cohort</span>
+      <div class="seg" id="cohortSeg"></div></div>
+    <div><span class="ctl-label">View</span>
+      <div class="seg" id="viewSeg">
+        <button type="button" data-v="chart" aria-pressed="true">Funnel</button>
+        <button type="button" data-v="table" aria-pressed="false">Table</button>
+      </div></div>
+    <span class="spacer"></span>
+    <button class="theme" id="themeBtn" type="button">Theme: auto</button>
+  </div>
+
+  <div id="status"></div>
+
+  <div id="chartView">
+    <div class="legend" aria-label="Legend">
+      <span><i style="background:var(--issued)"></i>Cards issued (100%)</span>
+      <span><i style="background:var(--st-7)"></i>1st txn within 7 days</span>
+      <span><i style="background:var(--st-14)"></i>within 14 days</span>
+      <span><i style="background:var(--st-30)"></i>within 30 days</span>
+      <span><i style="background:var(--st-ever)"></i>ever, through 16 Nov 2026 (not final)</span>
+    </div>
+    <div class="matrix" id="matrix"></div>
+  </div>
+
+  <div id="tableView" hidden>
+    <div class="tablewrap">
+      <table id="tbl">
+        <thead><tr>
+          <th>Cohort</th><th>Segment</th><th>Card product</th>
+          <th>Cards issued</th><th>Cards per KM</th><th>≤ 7d</th><th>≤ 14d</th><th>≤ 30d</th><th>Ever (to 16 Nov)</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <h2>What stands out</h2>
+  <div class="notes" id="notes"></div>
+
+  <p class="src">Source: Tide KM and Card First-Transaction Analysis (BigQuery UK, run 16 Nov 2026). Scope: new KMs only. Virtual cards issued to or used by mature KMs are not included, so the Virtual figures are not representative of Virtual card activation overall. Unit = company (business_id). Cards = main cardholder, not additional or replacement, issued from 1 day before to 30 days after KM. First transaction = first CLEARED DEBIT CARD_TRANSACTION (cash withdrawals and refunds excluded). Rates are cumulative and use only cards old enough to observe each window (Table D of the source). Sep and Oct “no transaction” and “ever” figures are censored and not final; Oct 30-day rates cover only cards issued on or before 17 Oct. Known issue: from 25 Sep 2026 a bug stopped Online Debit issuance to about half of BCA intent, which lowers BCA Online Debit cards per KM in Sep (last ~6 days) and Oct; the rates describe only the cards that were issued. Auto-issuing of Online Debit is being cancelled from this month. Totals were not reconciled with Looker.</p>
+</div>
+
+<div class="tip" id="tip" role="tooltip"></div>
+
+<script>
+/* ---------- data (Tables B and D of the source doc) ---------- */
+// kms = KMs in cohort; cards = cards issued; cpk = cards per KM (%)
+// m = cards with a full observation window for 7d / 14d / 30d
+// r = cumulative first-txn rate (%) for 7d, 14d, 30d, ever (through 16 Nov)
+const COHORTS = [
+  { id: "dec", label: "Dec 2025", sub: "baseline", status: "final",
+    statusText: "Final · every card has ≥ 290 days of history" },
+  { id: "sep", label: "Sep 2026", sub: "", status: "final",
+    statusText: "Near-final · physical and Online Debit are 99%+ mature at 30 days, Virtual ~95%; “ever” is still open" },
+  { id: "oct", label: "Oct 2026", sub: "provisional", status: "warn",
+    statusText: "Not fully mature · 15–30d, 30d and “ever” are still open; 30d uses only cards issued by 17 Oct, so it can exceed “ever”" }
+];
+const BUG_NOTE_SEP = "Bug: from 25 Sep, Online Debit was not issued to about half of BCA intent. Only the last ~6 days of Sep are affected. Rates cover only the cards that were issued, which may not be representative.";
+const BUG_NOTE_OCT = "Bug: Online Debit was not issued to about half of BCA intent all month, so cards per KM is ~53%. Rates cover only the cards that were issued, which may not be representative.";
+const DATA = {
+  dec: {
+    BCA:  { physical: {kms:7311, cards:6131, cpk:83.9, m:[6131,6131,6131], r:[12.3,18.9,28.4,52.9]},
+            online:   {kms:7311, cards:6070, cpk:83.0, m:[6070,6070,6070], r:[3.8,5.8,9.1,24.0]},
+            virtual:  {kms:7311, cards:74,   cpk:1.0,  m:[74,74,74],       r:[21.6,25.7,27.0,36.5]} },
+    CoFo: { physical: {kms:3877, cards:3323, cpk:85.7, m:[3323,3323,3323], r:[8.1,12.8,21.4,49.0]},
+            online:   {kms:3877, cards:3127, cpk:80.7, m:[3127,3127,3127], r:[3.6,5.2,8.8,24.8]},
+            virtual:  {kms:3877, cards:26,   cpk:0.7,  m:[26,26,26],       r:[7.7,7.7,15.4,23.1]} }
+  },
+  sep: {
+    BCA:  { physical: {kms:9614,  cards:8949, cpk:93.1, m:[8949,8949,8924], r:[13.0,20.2,28.8,35.3]},
+            online:   {kms:9614,  cards:8117, cpk:84.4, m:[8117,8117,8103], r:[4.3,6.1,8.9,12.5], note: BUG_NOTE_SEP},
+            virtual:  {kms:9614,  cards:990,  cpk:10.3, m:[990,990,949],    r:[27.6,29.0,31.3,32.1]} },
+    CoFo: { physical: {kms:10350, cards:9763, cpk:94.3, m:[9763,9763,9734], r:[10.0,15.9,24.3,31.1]},
+            online:   {kms:10350, cards:8618, cpk:83.3, m:[8618,8618,8597], r:[3.7,5.8,9.0,12.6]},
+            virtual:  {kms:10350, cards:394,  cpk:3.8,  m:[394,394,360],    r:[24.9,27.4,28.1,34.0]} }
+  },
+  oct: {
+    BCA:  { physical: {kms:8167, cards:7627, cpk:93.4, m:[7596,7504,3974], r:[11.5,18.4,27.0,26.5]},
+            online:   {kms:8167, cards:4315, cpk:52.8, m:[4309,4247,2247], r:[4.6,6.7,9.7,9.9], note: BUG_NOTE_OCT},
+            virtual:  {kms:8167, cards:820,  cpk:10.0, m:[780,714,350],    r:[18.6,20.7,34.0,33.8]} },
+    CoFo: { physical: {kms:9847, cards:9293, cpk:94.4, m:[9246,9128,4801], r:[8.5,14.4,23.1,21.5]},
+            online:   {kms:9847, cards:7986, cpk:81.1, m:[7980,7888,4187], r:[4.7,6.7,10.4,9.8]},
+            virtual:  {kms:9847, cards:396,  cpk:4.0,  m:[377,348,123],    r:[13.5,18.7,23.6,25.5]} }
+  }
+};
+const SEGMENTS = [
+  { key: "BCA",  name: "BCA",  long: "Business Current Account (direct access)" },
+  { key: "CoFo", name: "CoFo", long: "Company Formation" }
+];
+const PRODUCTS = [
+  { key: "physical", name: "Physical card",     long: "Physical Main (PLASTIC / PRE_PAID)" },
+  { key: "online",   name: "Online Debit card", long: "Online Debit (VIRTUAL / DEBIT)" },
+  { key: "virtual",  name: "Virtual card",      long: "Virtual (VIRTUAL / PRE_PAID) · new KMs only" }
+];
+const STAGES = [
+  { key: "issued", label: "Card issued",      color: "var(--issued)" },
+  { key: "d7",     label: "1st txn ≤ 7 days", color: "var(--st-7)",    idx: 0 },
+  { key: "d14",    label: "≤ 14 days",        color: "var(--st-14)",   idx: 1 },
+  { key: "d30",    label: "≤ 30 days",        color: "var(--st-30)",   idx: 2 },
+  { key: "ever",   label: "Ever (to 16 Nov)", color: "var(--st-ever)", idx: 3 }
+];
+
+/* ---------- helpers ---------- */
+const fmtInt = n => n.toLocaleString("en-GB");
+const fmtPct = n => n.toFixed(1) + "%";
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+const cohortById = id => COHORTS.find(c => c.id === id);
+let state = { cohort: "sep", view: "chart" };
+
+/* ---------- tooltip ---------- */
+const tip = document.getElementById("tip");
+function showTip(info, x, y) {
+  tip.replaceChildren();
+  tip.append(el("div", "t-title", info.title));
+  tip.append(el("div", "t-val", info.value));
+  info.rows.forEach(r => {
+    const row = el("div", "t-row");
+    if (r.key) { const k = el("span", "t-key"); k.style.background = r.key; row.append(k); }
+    row.append(el("span", "", r.text));
+    tip.append(row);
+  });
+  tip.classList.add("on");
+  moveTip(x, y);
+}
+function moveTip(x, y) {
+  const pad = 14, w = tip.offsetWidth, h = tip.offsetHeight;
+  let left = x + pad, top = y + pad;
+  if (left + w > innerWidth - 8) left = x - w - pad;
+  if (top + h > innerHeight - 8) top = y - h - pad;
+  tip.style.left = Math.max(8, left) + "px"; tip.style.top = Math.max(8, top) + "px";
+}
+const hideTip = () => tip.classList.remove("on");
+
+/* ---------- funnel panel ---------- */
+function stageInfo(d, stage, seg, prod, cohort) {
+  const title = `${seg.name} · ${prod.name} · ${cohort.label}`;
+  if (stage.key === "issued") {
+    return { title: `${title} — cards issued`, value: fmtInt(d.cards) + " cards",
+      rows: [ { text: `From ${fmtInt(d.kms)} KMs (${d.cpk.toFixed(1)}% cards per KM)`, key: stage.color },
+              { text: "Baseline = 100%" } ] };
+  }
+  const rate = d.r[stage.idx];
+  const prev = stage.idx === 0 ? 100 : d.r[stage.idx - 1];
+  const delta = rate - prev;
+  const base = stage.idx < 3 ? d.m[stage.idx] : d.cards;
+  const approx = Math.round(rate / 100 * base);
+  const rows = [
+    { text: `≈ ${fmtInt(approx)} of ${fmtInt(base)} ${stage.idx < 3 ? "cards with a full window" : "cards issued"}`, key: stage.color }
+  ];
+  if (stage.idx === 0) rows.push({ text: `${fmtPct(100 - rate)} of cards still without a txn` });
+  else rows.push({ text: `${delta >= 0 ? "+" : "−"}${Math.abs(delta).toFixed(1)} pp vs previous stage` +
+      (delta < 0 ? " (different card base)" : "") });
+  if (stage.idx === 3) rows.push({ text: cohort.id === "dec" ? "Final (≥ 290 days observed)" : "Not final: window still open" });
+  return { title: `${title} — ${stage.label}`, value: fmtPct(rate), rows };
+}
+
+function buildPanel(seg, prod, cohort) {
+  const d = DATA[cohort.id][seg.key][prod.key];
+  const panel = el("section", "panel");
+  panel.setAttribute("aria-label", `${seg.name} ${prod.name}, ${cohort.label}`);
+  panel.append(el("h3", "", `${seg.name} · ${prod.name}`));
+  panel.append(el("div", "meta", `${fmtInt(d.cards)} cards issued from ${fmtInt(d.kms)} KMs (${d.cpk.toFixed(1)}%)`));
+
+  const f = el("div", "funnel");
+  f.append(el("div", "grid-lines"));
+
+  STAGES.forEach(st => {
+    const row = el("div", "frow");
+    row.append(el("div", "flabel", st.label));
+    const plot = el("div", "plot");
+    const rate = st.key === "issued" ? 100 : d.r[st.idx];
+    const bar = el("div", "bar");
+    bar.style.width = rate + "%";
+    bar.style.background = st.color;
+    bar.tabIndex = 0;
+    const info = stageInfo(d, st, seg, prod, cohort);
+    bar.setAttribute("role", "img");
+    bar.setAttribute("aria-label", `${info.title}: ${info.value}. ${info.rows.map(r => r.text).join(". ")}`);
+    bar.addEventListener("pointerenter", e => showTip(info, e.clientX, e.clientY));
+    bar.addEventListener("pointermove", e => moveTip(e.clientX, e.clientY));
+    bar.addEventListener("pointerleave", hideTip);
+    bar.addEventListener("focus", () => { const r = bar.getBoundingClientRect(); showTip(info, r.right, r.top); });
+    bar.addEventListener("blur", hideTip);
+    const val = el("div", "val", st.key === "issued" ? "100%" : fmtPct(rate));
+    val.style.left = `calc(${rate}% + 8px)`;
+    plot.append(bar, val);
+    row.append(plot);
+    f.append(row);
+  });
+
+  const axis = el("div", "axis");
+  axis.append(el("div"));
+  const ticks = el("div", "ticks");
+  [0, 25, 50, 75, 100].forEach(p => { const s = el("span", "", p + "%"); s.style.left = p + "%"; ticks.append(s); });
+  axis.append(ticks);
+  f.append(axis);
+  panel.append(f);
+
+  // footnotes: base coverage, 30d-vs-ever inversion, known issues
+  const notes = [];
+  const matPct = d.m[2] / d.cards * 100;
+  if (matPct < 99.5) notes.push(`30-day rate covers ${matPct.toFixed(0)}% of cards (only those issued early enough). “Ever” covers all cards.`);
+  if (d.r[2] > d.r[3]) notes.push("30-day exceeds “ever” only because the two use different card bases.");
+  if (prod.key === "virtual") notes.unshift("New-KM cohort only. Excludes Virtual cards issued to mature KMs, which account for most Virtual card usage.");
+  const foot = el("div", "foot");
+  if (notes.length) foot.append(document.createTextNode(notes.join(" ")));
+  if (d.note) { const f2 = el("span", "flag", " " + d.note); foot.append(f2); }
+  panel.append(foot);
+  return panel;
+}
+
+/* gridlines must sit exactly on the plot area: measure after layout */
+function alignGrid(panel) {
+  const f = panel.querySelector(".funnel"), gl = f.querySelector(".grid-lines");
+  const plot = f.querySelector(".plot"); if (!plot) return;
+  const fr = f.getBoundingClientRect(), pr = plot.getBoundingClientRect();
+  const rows = f.querySelectorAll(".frow"), last = rows[rows.length - 1].getBoundingClientRect();
+  gl.style.left = (pr.left - fr.left) + "px"; gl.style.width = pr.width + "px";
+  gl.style.top = "0px"; gl.style.height = (last.bottom - fr.top) + "px";
+  gl.replaceChildren();
+  [25, 50, 75, 100].forEach(p => { const i = document.createElement("i"); i.style.left = p + "%"; gl.append(i); });
+}
+
+/* ---------- render ---------- */
+function renderStatus() {
+  const c = cohortById(state.cohort);
+  const s = document.getElementById("status");
+  s.replaceChildren();
+  const box = el("div", "status " + c.status);
+  box.append(el("span", "", c.status === "final" ? "✓" : "⚠"), el("b", "", c.label + (c.sub ? " (" + c.sub + ")" : "")), el("span", "", c.statusText));
+  s.append(box);
+}
+function renderMatrix() {
+  const m = document.getElementById("matrix");
+  m.replaceChildren();
+  const c = cohortById(state.cohort);
+  m.append(el("div", "colhead empty"));
+  PRODUCTS.forEach(p => { const h = el("div", "colhead", p.name); h.append(el("small", "", p.long)); m.append(h); });
+  SEGMENTS.forEach(seg => {
+    m.append(el("div", "rowhead", seg.name));
+    PRODUCTS.forEach(p => m.append(buildPanel(seg, p, c)));
+  });
+  m.querySelectorAll(".panel").forEach(alignGrid);
+}
+function renderTable() {
+  const tb = document.querySelector("#tbl tbody");
+  tb.replaceChildren();
+  COHORTS.forEach(c => {
+    let first = true;
+    SEGMENTS.forEach(seg => PRODUCTS.forEach(p => {
+      const d = DATA[c.id][seg.key][p.key];
+      const tr = document.createElement("tr");
+      if (c.id === state.cohort) tr.className = "sel";
+      if (first) { tr.classList.add("groupstart"); first = false; }
+      [c.label + (c.sub ? " (" + c.sub + ")" : ""), seg.name, p.name, fmtInt(d.cards), d.cpk.toFixed(1) + "%",
+       fmtPct(d.r[0]), fmtPct(d.r[1]), fmtPct(d.r[2]), fmtPct(d.r[3])
+      ].forEach(t => tr.append(el("td", "", t)));
+      tb.append(tr);
+    }));
+  });
+}
+function renderControls() {
+  const seg = document.getElementById("cohortSeg");
+  seg.replaceChildren();
+  COHORTS.forEach(c => {
+    const b = el("button", "", c.label + (c.sub ? " · " + c.sub : ""));
+    b.type = "button"; b.setAttribute("aria-pressed", String(c.id === state.cohort));
+    b.addEventListener("click", () => { state.cohort = c.id; hideTip(); render(); });
+    seg.append(b);
+  });
+  document.querySelectorAll("#viewSeg button").forEach(b => {
+    b.setAttribute("aria-pressed", String(b.dataset.v === state.view));
+    b.onclick = () => { state.view = b.dataset.v; render(); };
+  });
+}
+function render() {
+  renderControls(); renderStatus();
+  document.getElementById("chartView").hidden = state.view !== "chart";
+  document.getElementById("tableView").hidden = state.view !== "table";
+  renderMatrix(); renderTable();
+}
+
+/* ---------- takeaways (computed from the data above) ---------- */
+function renderNotes() {
+  const n = document.getElementById("notes"), D = DATA;
+  const b = D.dec.BCA.physical.r;
+  const items = [
+    ["Physical cards convert ~3× faster than Online Debit",
+     `Sep 2026: ${fmtPct(D.sep.BCA.physical.r[2])} (BCA) and ${fmtPct(D.sep.CoFo.physical.r[2])} (CoFo) of physical cards transact within 30 days, vs ${fmtPct(D.sep.BCA.online.r[2])} and ${fmtPct(D.sep.CoFo.online.r[2])} for Online Debit.`],
+    ["Among new KMs, Virtual cards activate fastest",
+     `Sep 2026 BCA: ${fmtPct(D.sep.BCA.virtual.r[0])} transact within 7 days (physical: ${fmtPct(D.sep.BCA.physical.r[0])}), but only ${D.sep.BCA.virtual.cpk.toFixed(1)}% of BCA KMs got a Virtual card (CoFo: ${D.sep.CoFo.virtual.cpk.toFixed(1)}%). New KMs only; Virtual card usage by mature KMs is out of scope.`],
+    ["BCA beats CoFo on physical, not on online",
+     `Physical 30-day: BCA ${fmtPct(D.dec.BCA.physical.r[2])} vs CoFo ${fmtPct(D.dec.CoFo.physical.r[2])} (Dec 2025) and ${fmtPct(D.sep.BCA.physical.r[2])} vs ${fmtPct(D.sep.CoFo.physical.r[2])} (Sep 2026). Online Debit is a dead heat (~9%) in both cohorts.`],
+    ["Many first transactions arrive late",
+     `Dec 2025 physical BCA: ${fmtPct(b[0])} transact in week 1 and ${fmtPct(b[2])} by day 30, but ${fmtPct(b[3])} eventually do, so ${Math.round((b[3]-b[2])/b[3]*100)}% of eventual activators first transact after day 30.`],
+    ["Long-run activation is much lower for Online Debit",
+     `Dec 2025 cards, ~11 months on: ${fmtPct(D.dec.BCA.physical.r[3])} / ${fmtPct(D.dec.CoFo.physical.r[3])} of physical cards (BCA / CoFo) have ever transacted, vs ${fmtPct(D.dec.BCA.online.r[3])} / ${fmtPct(D.dec.CoFo.online.r[3])} for Online Debit.`]
+  ];
+  items.forEach(([t, body]) => { const d = el("div", "note"); d.append(el("b", "", t), document.createTextNode(body)); n.append(d); });
+}
+
+/* ---------- theme toggle ---------- */
+const themeBtn = document.getElementById("themeBtn");
+const themes = ["auto", "light", "dark"]; let ti = 0;
+themeBtn.addEventListener("click", () => {
+  ti = (ti + 1) % 3; const t = themes[ti];
+  if (t === "auto") document.documentElement.removeAttribute("data-theme"); else document.documentElement.dataset.theme = t;
+  themeBtn.textContent = "Theme: " + t;
+});
+
+addEventListener("resize", () => document.querySelectorAll(".panel").forEach(alignGrid));
+renderNotes(); render();
+</script>
+</body>
+</html>
